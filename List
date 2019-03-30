@@ -1,0 +1,86 @@
+template<typename T>
+struct List
+{
+	List();
+
+	void push_back(T data);
+	void pop_front();
+	T show(int index);
+
+private:
+	template<typename T>
+	struct Node
+	{
+		Node<T> *pNext;
+		T data;
+
+		Node(Node<T> *pNext = nullptr, T data = T())
+		{
+			this->pNext = pNext;
+			this->data = data;
+		}
+	};
+
+	Node<T>* head;
+	int Size;
+};
+
+
+int main()
+{
+	List<int> list;
+	list.push_back(5);
+	list.push_back(6);
+	list.pop_front();
+
+	printf("%d", list.show(0));
+
+	return 0;
+}
+
+template<typename T>
+List<T>::List()
+{
+	head = nullptr;
+	Size = 0;
+}
+
+template<typename T>
+void List<T>::push_back(T data)
+{
+	if (head == nullptr) head = new Node<T>(nullptr, data);
+	else
+	{
+		Node<T>* count = head;
+		while (count->pNext != nullptr)
+		{
+			count = count->pNext;
+		}
+		count->pNext = new Node<T>(nullptr, data);
+	}
+	Size++;
+}
+
+template<typename T>
+void List<T>::pop_front()
+{
+	Node<T> *toDelete = head;
+	head = head->pNext;
+	free(toDelete);
+	Size--;
+}
+
+
+template<typename T>
+T List<T>::show(int index)
+{
+	int count = 0;
+	Node<T> *show = head;
+	while (show != nullptr) 
+	{
+		if (count == index) break;
+		show = show->pNext;
+		count++;
+	}
+	return show->data;
+}
