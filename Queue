@@ -1,0 +1,77 @@
+#ifndef QUEUE_H
+#define QUEUE_H
+
+template<typename T>
+class Node
+{
+public:
+    Node<T> *pNext;
+    T data;
+    Node(T data = T(), Node<T> *pNext = nullptr)
+    {
+        this->data = data;
+        this->pNext = pNext;
+    }
+};
+
+
+template<typename T>
+class Queue
+{
+public:
+    Queue();
+    ~Queue(){clear();}
+    void push_back(T data);
+    void pop_front();
+    void clear();
+    int GetSize(){return size;}
+    T GetFront(){return head->data;}
+
+private:
+    Node<T> *head;
+    int size;
+};
+
+
+template<typename T>
+Queue<T>::Queue()
+{
+    head = nullptr;
+    size = 0;
+}
+
+template<typename T>
+void Queue<T>::push_back(T data)
+{
+    if (head == nullptr) head = new Node<T>(data);
+    else
+    {
+        Node<T> *back = head;
+        while (back->pNext != nullptr)
+        {
+            back = back->pNext;
+        }
+        back->pNext = new Node<T>(data);
+    }
+    size++;
+}
+
+template<typename T>
+void Queue<T>::pop_front()
+{
+    Node<T> *toDelete = head;
+    head = head->pNext;
+    delete toDelete;
+    size--;
+}
+
+template<typename T>
+void Queue<T>::clear()
+{
+    while(size)
+    {
+        pop_front();
+    }
+}
+
+#endif // QUEUE_H
