@@ -1,15 +1,15 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef DL_LIST_H
+#define DL_LIST_H
 
 template<typename T>
 class Node
 {
 public:
-    Node<T> *pNext;
-    Node<T> *pPrev;
+    Node<T>* pNext;
+    Node<T>* pPrev;
     T data;
 
-    Node(T data = T(), Node<T> *pNext = nullptr, Node<T> *pPrev = nullptr)
+    Node(T data = T(), Node<T>* pNext = nullptr, Node<T>* pPrev = nullptr)
     {
         this->data = data;
         this->pNext = pNext;
@@ -18,11 +18,11 @@ public:
 };
 
 template<typename T>
-class myList
+class dlList
 {
 public:
-    myList();
-    ~myList();
+    dlList();
+    ~dlList();
 
     void push_back(T data);
     void push_front(T data);
@@ -30,22 +30,22 @@ public:
     void pop_back();
     void remove(int index);
     void clear();
-    int GetSize(){return size;}
+    int GetSize() { return size; }
 
     T GetData(int index);
     T GetBack();
     T GetFront();
 
 private:
-    Node<T> *head;
-    Node<T> *tail;
+    Node<T>* head;
+    Node<T>* tail;
     int size;
 };
 
-#endif // QUEUE_H
+#endif // DL_LIST_H
 
 template<typename T>
-myList<T>::myList()
+dlList<T>::dlList()
 {
     head = nullptr;
     tail = nullptr;
@@ -53,13 +53,13 @@ myList<T>::myList()
 }
 
 template<typename T>
-myList<T>::~myList()
+dlList<T>::~dlList()
 {
     clear();
 }
 
 template<typename T>
-void myList<T>::push_back(T data)
+void dlList<T>::push_back(T data)
 {
     if (head == nullptr)
     {
@@ -68,36 +68,36 @@ void myList<T>::push_back(T data)
     }
     else
     {
-        Node<T> *temp = tail;
+        Node<T>* current = tail;
         tail = new Node<T>(data, nullptr, tail);
-        temp->pNext = tail;
+        current->pNext = tail;
     }
     size++;
 }
 
 template<typename T>
-void myList<T>::push_front(T data)
+void dlList<T>::push_front(T data)
 {
-    Node<T> *temp = head;
+    Node<T>* temp = head;
     head = new Node<T>(data, head);
     temp->pPrev = head;
     size++;
 }
 
 template<typename T>
-void myList<T>::pop_front()
+void dlList<T>::pop_front()
 {
-    Node<T> *toDelete = head;
+    Node<T>* toDelete = head;
     head = head->pNext;
-    if (head) head->pPrev = nullptr;
+    if(head) head->pPrev = nullptr;
     delete toDelete;
     size--;
 }
 
 template<typename T>
-void myList<T>::pop_back()
+void dlList<T>::pop_back()
 {
-    Node<T> *toDelete = tail;
+    Node<T>* toDelete = tail;
     tail = tail->pPrev;
     if (tail) tail->pNext = nullptr;
     delete toDelete;
@@ -105,35 +105,35 @@ void myList<T>::pop_back()
 }
 
 template<typename T>
-void myList<T>::remove(int index)
+void dlList<T>::remove(int index)
 {
     if (index == 0) pop_front();
-    else if (index == size-1) pop_back();
+    else if (index == size - 1) pop_back();
     else
     {
-        if (index > (size-1)/2)
+        if (index > (size - 1) / 2)
         {
-            Node<T> *next = tail;
-            for(int i = size-1; i > index+1; i++)
+            Node<T>* next = tail;
+            for (int i = size - 1; i > index + 1; i--)
             {
                 next = next->pPrev;
             }
-            Node<T> *toDelete = next->pPrev;
+            Node<T>* toDelete = next->pPrev;
             next->pPrev = toDelete->pPrev;
-            Node<T> *temp = toDelete->pPrev;
+            Node<T>* temp = toDelete->pPrev;
             temp->pNext = toDelete->pNext;
             delete toDelete;
         }
         else
         {
-            Node<T> *previous = head;
-            for(int i = 0; i < index-1; i++)
+            Node<T>* previous = head;
+            for (int i = 0; i < index - 1; i++)
             {
                 previous = previous->pNext;
             }
-            Node<T> *toDelete = previous->pNext;
+            Node<T>* toDelete = previous->pNext;
             previous->pNext = toDelete->pNext;
-            Node<T> *prev = toDelete->pNext;
+            Node<T>* prev = toDelete->pNext;
             prev->pPrev = toDelete->pPrev;
             delete toDelete;
         }
@@ -142,23 +142,23 @@ void myList<T>::remove(int index)
 }
 
 template<typename T>
-void myList<T>::clear()
+void dlList<T>::clear()
 {
-    while(size)
+    while (size)
     {
         pop_front();
     }
 }
 
 template<typename T>
-T myList<T>::GetData(int index)
+T dlList<T>::GetData(int index)
 {
-    if (index > size/2)
+    if (index > size / 2)
     {
-        int count = size-1;
-        Node<T> *search = tail;
+        int count = size - 1;
+        Node<T>* search = tail;
 
-        while(search->pPrev != nullptr)
+        while (search->pPrev != nullptr)
         {
             if (count == index) break;
             search = search->pPrev;
@@ -169,9 +169,9 @@ T myList<T>::GetData(int index)
     else
     {
         int count = 0;
-        Node<T> *search = head;
+        Node<T>* search = head;
 
-        while(search->pNext != nullptr)
+        while (search->pNext != nullptr)
         {
             if (count == index) break;
             search = search->pNext;
@@ -182,14 +182,13 @@ T myList<T>::GetData(int index)
 }
 
 template<typename T>
-T myList<T>::GetBack()
+T dlList<T>::GetBack()
 {
     return tail->data;
 }
 
 template<typename T>
-T myList<T>::GetFront()
+T dlList<T>::GetFront()
 {
     return head->data;
 }
-
