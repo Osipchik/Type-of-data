@@ -28,6 +28,7 @@ public:
     void push_front(T data);
     void pop_front();
     void pop_back();
+    void remove(int index);
     void clear();
     int GetSize(){return size;}
 
@@ -90,17 +91,54 @@ void myList<T>::pop_front()
     head = head->pNext;
     if (head) head->pPrev = nullptr;
     delete toDelete;
-
     size--;
 }
 
 template<typename T>
 void myList<T>::pop_back()
 {
-    Node<T> *toDeleteT = tail;
-    Node<T> *toDeleteP = tail->pNext;
+    Node<T> *toDelete = tail;
     tail = tail->pPrev;
+    if (tail) tail->pNext = nullptr;
+    delete toDelete;
+    size--;
+}
 
+template<typename T>
+void myList<T>::remove(int index)
+{
+    if (index == 0) pop_front();
+    else if (index == size-1) pop_back();
+    else
+    {
+        if (index > (size-1)/2)
+        {
+            Node<T> *next = tail;
+            for(int i = size-1; i > index+1; i++)
+            {
+                next = next->pPrev;
+            }
+            Node<T> *toDelete = next->pPrev;
+            next->pPrev = toDelete->pPrev;
+            Node<T> *temp = toDelete->pPrev;
+            temp->pNext = toDelete->pNext;
+            delete toDelete;
+        }
+        else
+        {
+            Node<T> *previous = head;
+            for(int i = 0; i < index-1; i++)
+            {
+                previous = previous->pNext;
+            }
+            Node<T> *toDelete = previous->pNext;
+            previous->pNext = toDelete->pNext;
+            Node<T> *prev = toDelete->pNext;
+            prev->pPrev = toDelete->pPrev;
+            delete toDelete;
+        }
+        size--;
+    }
 }
 
 template<typename T>
@@ -154,3 +192,4 @@ T myList<T>::GetFront()
 {
     return head->data;
 }
+
