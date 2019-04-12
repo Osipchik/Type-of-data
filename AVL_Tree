@@ -1,0 +1,191 @@
+
+#include <iostream>
+
+template<typename T>
+class node
+{
+public:
+	int key;
+	T data;
+	unsigned char height;
+	node* left;
+	node* right;
+	node(int key, T data)
+	{
+		this->key = key;
+		this->data = data;
+		left = 0;
+		right = 0;
+		height = 1;
+	}
+};
+
+
+template<typename T>
+class avl_tree
+{
+private:
+	unsigned char height(node<T>* p);
+	int balance_factor(node<T>* p);
+	void fix_height(node<T>* p);
+
+	node<T>* rotate_right(node<T>* p);
+	node<T>* rotate_left(node<T>* q);
+	node<T>* balance(node<T>* p);
+
+public:
+	node<T>* insert(node<T>* p, int key, T data);
+	T show(node<T>* p, int key);
+
+	private:
+	node<T>* find_min(node<T>* p);
+	node<T>* remove_min(node<T>* p);
+	node<T>* remove(node<T>* p, int key);
+};
+
+
+
+
+int main()
+{
+	node<int> node(10, 5);
+	avl_tree<int> tree;
+	tree.insert(&node, 11, 123);
+	tree.insert(&node, 3, 123);
+	tree.insert(&node, 5, 15);
+	tree.insert(&node, 20, 123);
+	tree.insert(&node, 22, 123);
+	tree.insert(&node, 17, 123);
+	tree.insert(&node, 2, 123);
+	tree.insert(&node, 1, 12);
+	std::cout << tree.show(&node, 1);
+	std::cout << tree.show(&node, 5);
+}
+
+template<typename T>
+unsigned char avl_tree<T>::height(node<T>* p)
+{
+	return p ? p->height : 0;
+}
+
+template<typename T>
+int avl_tree<T>::balance_factor(node<T>* p)
+{
+	return height(p->right) - height(p->left);
+}
+
+template<typename T>
+void avl_tree<T>::fix_height(node<T>* p)
+{
+	unsigned char hLeft = height(p->left);
+	unsigned char hRight = height(p->right);
+	p->height = (hLeft > hRight ? hLeft : hRight) + 1;
+}
+
+template<typename T>
+node<T>* avl_tree<T>::rotate_right(node<T>* p)
+{
+	node<T>* q = p->right;
+	p->left = q->right;
+	q->right = p;
+	fix_height(p);
+	fix_height(q);
+	return q;
+}
+
+template<typename T>
+node<T>* avl_tree<T>::rotate_left(node<T>* q)
+{
+	node<T>* p = q->right;
+	q->right = p->left;
+	p->left = q;
+	fix_height(q);
+	fix_height(p);
+	return p;
+}
+
+template<typename T>
+node<T>* avl_tree<T>::balance(node<T>* p)
+{
+	fix_height(p);
+	//std::cout << std::endl << balance_factor(p);
+	if (balance_factor(p) == 2)
+	{
+		if (balance_factor(p->right) < 0) 
+			p->right = rotate_right(p->right);
+		return rotate_left(p);
+	}
+
+	if (balance_factor(p) == 2)
+	{
+		if (balance_factor(p->left) > 0)
+			p->left = rotate_left(p->left);
+		return rotate_right(p);
+	}
+
+	return p;
+}
+
+template<typename T>
+node<T>* avl_tree<T>::insert(node<T>* p, int key, T data)
+{
+	if (!p) return new node<T>(key, data);
+	if (key < p->key)
+		p->left = insert(p->left, key, data);
+	else
+		p->right = insert(p->right, key, data);
+	return balance(p);
+}
+
+
+template<typename T>
+T avl_tree<T>::show(node<T>* p, int key)
+{
+	while(true)
+	{
+		if (p == 0) return 0;
+		if (key > p->key) p = p->right;
+		else if (key < p->key) p = p->left;
+		else break;
+	}
+	if (key == p->key) return p->data;
+	
+}
+
+template<typename T>
+node<T>* avl_tree<T>::find_min(node<T>* p)
+{
+	return p->left ? find_min(p->left) : p;
+}
+
+template<typename T>
+node<T>* avl_tree<T>::remove_min(node<T>* p)
+{
+	if (p->left == 0) return p->right;
+	p->left = remove_min(p->left);
+	return balance(p);
+}
+
+template<typename T>
+node<T>* avl_tree<T>::remove(node<T>* p, int key)
+{
+	if (!p) return 0;
+	if (key < p->key)
+		p->left = remove(p->left, key);
+	else if (key > p->key)
+		p->right = remove(p->right, key);
+	
+	else
+	{
+		node<T>* q = p->left;
+		node<T>* r = p->right;
+		delete p;
+		if (!r) return q;
+		node<T>* min = find_min(r);
+		min->right = remove_min(r);
+		min->left = q;
+		return balance(min);
+	}
+
+	return balance(p);
+}
