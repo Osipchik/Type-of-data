@@ -1,3 +1,4 @@
+#pragma once
 
 template<typename T>
 class List
@@ -23,6 +24,7 @@ public:
 	~List() { clear(); }
 	void push_back(T data);
 	void push_front(T data);
+	void insert(int index, T data = T());
 
 	void pop_front();
 	void pop_back();
@@ -57,6 +59,31 @@ inline void List<T>::push_front(T data)
 {
 	head = new Node<T>(data, head);
 	size++;
+}
+
+template<typename T>
+inline void List<T>::insert(int index, T data)
+{
+	if (index >= size) return;
+
+	if (index == 0) push_front(data);
+	else if (index == size - 1) push_back(data);
+	else
+	{
+		Node<T>* previous = head;
+		while (previous)
+		{
+			if (index - 1 == 0)
+			{
+				Node<T>* newItem = previous->pNext;
+				previous->pNext = new Node<T>(data, newItem->pNext);
+				size++;
+				break;
+			}
+			previous = previous->pNext;
+			index--;
+		}
+	}
 }
 
 template<typename T>
