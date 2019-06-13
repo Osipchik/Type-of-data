@@ -1,117 +1,188 @@
 
-#include <iostream>
+#include <stdio.h>
 #include <malloc.h>
 
-typedef struct node
+typedef struct Node
 {
-	int data;
-	struct node* p_next;
-}list;
+    int data;
+    struct Node *p_next;
+}node;
 
-list *create_list(int data)
+typedef struct list
 {
-	list* item = (list*)malloc(sizeof(list));
-	item->data = data;
-	item->p_next = NULL;
-	return item;
+    node *head;
+    int size;
+}List;
+
+void create_list(List *list)
+{
+    list->head = NULL;
+    list->size = 0;
 }
 
-list *add_front(int data, list *head)
+void push_front(List *list, int data)
 {
-	list* item = (list*)malloc(sizeof(list));
-	item->data = data;
-	item->p_next = head;
-	return item;
+    if(list->head == NULL)
+    {
+        list->head = (node*)malloc(sizeof (node));
+        list->head->data = data;
+        list->head->p_next = NULL;
+        list->size++;
+    }
+    else
+    {
+        node* item = (node*)malloc(sizeof (node));
+        item->data = data;
+        item->p_next = list->head;
+        list->head = item;
+        list->size++;
+    }
 }
 
-void add_back(int data, list *head)
+void push_back(List *list, int data)
 {
-	list* item = (list*)malloc(sizeof(list));
-	item->data = data;
-	item->p_next = NULL;
-
-	list* temp = head;
-	while(temp->p_next)
-	{
-		temp = temp->p_next;
-	}
-	temp->p_next = item;
+    if(list == NULL)
+    {
+        list->head = (node*)malloc(sizeof (node));
+        list->head->data = data;
+        list->head->p_next = NULL;
+        list->size++;
+    }
+    else
+    {
+        node *item = list->head;
+        while(item->p_next)
+        {
+            item = item->p_next;
+        }
+        node *new_item = (node*)malloc(sizeof (node));
+        new_item->data = data;
+        new_item->p_next = NULL;
+        item->p_next = new_item;
+        list->size++;
+    }
 }
 
-list *insert(int data, list *head, int index)
+void insert(int index, List *list, int data)
 {
-	if (index == 0) return add_front(data, head);
+    if(index > list->size || index < 0) return;
 
-	list* temp = head;
-	while(--index && temp->p_next)
-	{
-		temp = temp->p_next;
-	}
-
-	list* item = (list*)malloc(sizeof(list));
-	item->data = data;
-	item->p_next = temp->p_next;
-	temp->p_next = item;
-	return head;
+    if(index == 0) push_front(list, data);
+    else if(index == list->size) push_back(list, data);
+    else
+    {
+        node *item = list->head;
+        while(index-1)
+        {
+            item = item->p_next;
+            index--;
+        }
+        node *new_item = (node*)malloc(sizeof (node));
+        new_item->data = data;
+        new_item->p_next = item->p_next;
+        item->p_next = new_item;
+        list->size++;
+    }
 }
 
-list* clear(list* head)
+void pop_front(List *list)
 {
-	list* toDelete = head;
-	while(head)
-	{
-		toDelete = head;
-		head = head->p_next;
-		free(toDelete);
-	}
-	return NULL;
+    if(list->size == 0) return;
+
+    node *to_delete = list->head;
+    list->head = to_delete->p_next;
+    free(to_delete);
+    list->size--;
 }
 
-list* pop_front(list* head)
+void pop_back(List *list)
 {
-	if (!head) return NULL;
+    int size = list->size;
+    if(size == 0) return;
 
-	list* toDelete = head;
-	head = head->p_next;
-	free(toDelete);
-	return head;
+    node *temp = list->head;
+    while(size-1)
+    {
+        temp = temp->p_next;
+        size--;
+    }
+    node *to_delete = temp->p_next;
+    free(to_delete);
+    temp->p_next = NULL;
+    list->size--;
 }
 
-list* remove(list *head, int index)
+void remove_item(List *list, int index)
 {
-	if (index == 0) return pop_front(head);
+    if(list->size == 0) return;
 
-	list* search = head;
-	while(--index && search->p_next)
-	{
-		search = search->p_next;
-	}
-	list* toDelete = search->p_next;
-	search->p_next = toDelete->p_next;
-	free(toDelete);
-	return head;
+    if(index == 0) pop_front(list);
+    else if(index == list->size - 1) pop_back(list);
+    else
+    {
+        node *temp = list->head;
+        while(index-1)
+        {
+           temp = temp->p_next;
+           index--;
+        }
+        node *to_delete = temp->p_next;
+        node *p_next = to_delete->p_next;
+        free(to_delete);
+        temp->p_next = p_next;
+        list->size--;
+    }
+}
+
+void clear(List *list)
+{
+    while(list->head)
+    {
+        node *to_delete = list->head;
+        list->head = to_delete->p_next;
+        free(to_delete);
+    }
+    list->size = 0;
+}
+
+int get_data(List *list, int index)
+{
+    if(index > list->size) return 0;
+
+    node *temp = list->head;
+    while(index)
+    {
+        temp = temp->p_next;
+        index--;
+    }
+    return temp->data;
 }
 
 int main()
 {
-	list* List = create_list(1);
-	add_back(2, List);
-	List = add_front(0, List);
-	add_back(3, List);
-	add_back(4, List);
-	add_back(5, List);
-	List = insert(10, List, 3);
+    List *list = (List*)malloc(sizeof (List));
+    create_list(list);
+    push_front(list, 1);
+    push_back(list, 2);
+    push_back(list, 3);
+    push_back(list, 4);
+    push_back(list, 5);
+    push_back(list, 6);
+    push_front(list, 0);
 
-	List = remove(List, 0);
+    insert(7, list, 10);
 
-	list* temp = List;
-	while(temp)
-	{
-		printf("%d\n", temp->data);
-		temp = temp->p_next;
-	}
 
-	List = clear(List);
-	free(List);
+    printf("size = %d\n", list->size);
+
+    for(int i = 0; i < list->size; i++)
+    {
+        printf("%d\n", get_data(list, i));
+    }
+
+    clear(list);
+    free(list);
+
+    return 0;
 }
 
