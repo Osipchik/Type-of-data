@@ -160,5 +160,12 @@ namespace Tree
         {
             _pRoot = Remove(_pRoot, key);
         }
+        
+        public void Clear()
+        {
+            _pRoot = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
     }
 }
