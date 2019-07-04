@@ -1,232 +1,179 @@
-#ifndef AVLTREE_H
-#define AVLTREE_H
+#ifndef AVL_TREE_H
+#define AVL_TREE_H
 
-#include "queue.h"
+#endif // AVL_TREE_H
 
+#include <vector>
 
-template<typename T>
+template<typename T1, typename T2>
 class AVL_Tree
 {
-    template<typename T1>
-    class Node
+    class node
     {
     public:
-        int key;
         T1 data;
+        T2 key;
+        node* p_right;
+        node* p_left;
         unsigned char height;
-
-        Node* Left;
-        Node* Right;
-
-        Node(int key, T1 data = T1())
+        node(T1 data, T2 key)
         {
-            this->key = key;
             this->data = data;
-
-            Left = nullptr;
-            Right = nullptr;
+            this->key = key;
+            p_left = p_right = nullptr;
             height = 1;
         }
     };
+    node* p_root = nullptr;
 
-private:
-    Node<T>* pRoot = nullptr;
+    unsigned char height(node* p_node) { return (p_node) ? p_node->height : 0; }
+    int balance_factor(node* p_node) { return height(p_node->p_right) - height(p_node->p_left); }
+    void fix_height(node* p_node);
 
-    unsigned char height(Node<T>* pNode) { return pNode ? pNode->height : 0; }
-    int balance_factor(Node<T>* pNode)   { return height(pNode->Right) - height(pNode->Left); }
-    void fix_height(Node<T>* pNode);
+    node* rotate_right(node* p_node); //node*
+    node* rotate_left(node* p_node); //node*
+    node* balance(node* p_node); //node*
 
-    Node<T>* rotate_right(Node<T>* pAround_Node);
-    Node<T>* rotate_left(Node<T>* pAround_Node);
-    Node<T>* balance(Node<T>* pNode);
+    node* insert(node* p_node, T1 data, T2 key); //node*
 
-    Node<T>* insert(int key, T data, Node<T>* pNode);
-    void change(int key, T newData, Node<T> *pNode);
-    T GetData(int key, Node<T>* pNode);
+    T1 get_data(node* p_node, T2 key);
 
-    void GetNLR(Queue<T>& queue, Node<T>* pNode);
-    void GetLNR(Queue<T>& queue, Node<T>* pNode);
-    void GetLRN(Queue<T>& queue, Node<T>* pNode);
+    node* find_min(node* p_node) { return (p_node->p_left) ? find_min(p_node->p_left) : p_node; }
+    node* remove_min(node* p_node);
+    node* remove(node* p_node, T2 key);
+    node* clear(node* p_node);
 
-    Node<T>* find_min(Node<T>* pNode) { return pNode->Left ? find_min(pNode->Left) : pNode; }
-    Node<T>* remove_min(Node<T>* pNode);
-    Node<T>* remove(Node<T>* pNode, int key);
+    void get_NLR(node* p_node, std::vector<T2> &vec);
 
 public:
-    void Add(int key, T data) { pRoot = insert(key, data, pRoot); }
-    void change(int key, T newData) { change(key, newData, pRoot); }
+    ~AVL_Tree() { p_root ? clear(p_root) : nullptr; }
 
-    T GetData(int key){ return GetData(key, pRoot); }
-    void GetNLR(Queue<T>& queue) { GetNLR(queue, pRoot); }
-    void GetLNR(Queue<T>& queue) { GetLNR(queue, pRoot); }
-    void GetLRN(Queue<T>& queue) { GetLRN(queue, pRoot); }
-
-    void remove(int key) { pRoot = remove(pRoot, key); }
-    int GetHeight() { return pRoot->height; }
-    ~AVL_Tree();
+    void insert(T1 data, T2 key) { p_root = insert(p_root, data, key); }
+    void remove(T2 key) { p_root = p_root ? remove(p_root, key) : nullptr; }
+    void clear() { p_root = p_root ? clear(p_root) : nullptr; }
+    T1 get_data(T2 key) { return p_root ? get_data(p_root, key) : T1(); }
+    T1 get_root() { return p_root ? p_root->data : T1(); }
+    void get_NLR(std::vector<T2> &vec) { get_NLR(p_root, vec); }
 };
 
-#endif // AVLTREE_H
-
-template<typename T>
-void AVL_Tree<T>::fix_height(Node<T>* pNode)
+template<typename T1, typename T2>
+inline void AVL_Tree<T1, T2>::fix_height(node* p_node)
 {
-    unsigned char hLeft = height(pNode->Left);
-    unsigned char hRight = height(pNode->Right);
-    pNode->height = (hLeft > hRight ? hLeft : hRight) + 1;
+    unsigned char h_left = height(p_node->p_left);
+    unsigned char h_right = height(p_node->p_right);
+    p_node->height = (h_left > h_right ? h_left : h_right) + 1;
 }
 
-
-
-template<typename T>
-T AVL_Tree<T>::GetData(int key, Node<T>* pNode)
+template<typename T1, typename T2>
+typename AVL_Tree<T1, T2>:: node *AVL_Tree<T1, T2>::rotate_right(node* p_node)
 {
-    if (pNode == nullptr) return 0;
-    if (key == pNode->key) return pNode->data;
-    else if (key < pNode->key) GetData(key, pNode->Left);
-    else if (key > pNode->key) GetData(key, pNode->Right);
+    node* p_left = p_node->p_left;
+    p_node->p_left = p_left->p_right;
+    p_left->p_right = p_node;
+    fix_height(p_node);
+    fix_height(p_left);
+    return p_left;
 }
 
-template<typename T>
-void AVL_Tree<T>::change(int key, T newData, Node<T> *pNode)
+template<typename T1, typename T2>
+typename AVL_Tree<T1, T2>:: node *AVL_Tree<T1, T2>::rotate_left(node* p_node)
 {
-    if(key == pNode->key) pNode->data = newData;
-    else if(key < pNode->key) change(key, newData, pNode->Left);
-    else if(key > pNode->key) change(key, newData, pNode->Right);
+    node* p_right = p_node->p_right;
+    p_node->p_right = p_right->p_left;
+    p_right->p_left = p_node;
+    fix_height(p_node);
+    fix_height(p_right);
+    return p_right;
 }
 
-
-template<typename T>
-void AVL_Tree<T>::GetNLR(Queue<T>& queue, Node<T>* pNode)
+template<typename T1, typename T2>
+typename AVL_Tree<T1, T2>:: node *AVL_Tree<T1, T2>::balance(node* p_node)
 {
-    if (pNode == nullptr) return;
-
-    queue.push_back(pNode->data);
-    GetNLR(queue, pNode->Left);
-    GetNLR(queue, pNode->Right);
-}
-
-template<typename T>
-void AVL_Tree<T>::GetLNR(Queue<T>& queue, Node<T>* pNode)
-{
-    if (pNode == nullptr) return;
-
-    GetLNR(queue, pNode->Left);
-    queue.push_back(pNode->data);
-    GetLNR(queue, pNode->Right);
-}
-
-template<typename T>
-void AVL_Tree<T>::GetLRN(Queue<T>& queue, Node<T>* pNode)
-{
-    if (pNode == nullptr) return;
-
-    GetLRN(queue, pNode->Left);
-    GetLRN(queue, pNode->Right);
-    queue.push_back(pNode->data);
-}
-
-
-template<typename T>
-typename AVL_Tree<T>::template Node<T>* AVL_Tree<T>::insert(int key, T data, Node<T>* pNode)
-{
-    if (pNode == nullptr) return new Node<T>(key, data);
-
-    if (key < pNode->key)
+    fix_height(p_node);
+    if (balance_factor(p_node) == 2)
     {
-        pNode->Left = insert(key, data, pNode->Left);
+        if(balance_factor(p_node->p_right) < 0)
+            p_node->p_right = rotate_right(p_node->p_right);
+        return rotate_left(p_node);
     }
-    else
+    if(balance_factor(p_node) == -2)
     {
-        pNode->Right = insert(key, data, pNode->Right);
+        if (balance_factor(p_node->p_left) > 0)
+            p_node->p_left = rotate_left(p_node->p_left);
+        return rotate_right(p_node);
     }
-    return balance(pNode);
+    return p_node;
 }
 
-
-template<typename T>
-typename AVL_Tree<T>::template Node<T>* AVL_Tree<T>::rotate_right(Node<T>* pAround_Node)
+template<typename T1, typename T2>
+typename AVL_Tree<T1, T2>:: node *AVL_Tree<T1, T2>::insert(node* p_node, T1 data, T2 key)
 {
-    Node<T>* pNode = pAround_Node->Left;
-    pAround_Node->Left = pNode->Right;
-    pNode->Right = pAround_Node;
-    fix_height(pAround_Node);
-    fix_height(pNode);
-    return pNode;
+    if (p_node == nullptr) return new node(data, key);
+
+    if (key < p_node->key) p_node->p_left = insert(p_node->p_left, data, key);
+    else p_node->p_right = insert(p_node->p_right, data, key);
+
+    return balance(p_node);
 }
 
-template<typename T>
-typename AVL_Tree<T>::template Node<T>* AVL_Tree<T>::rotate_left(Node<T>* pAround_Node)
+template<typename T1, typename T2>
+T1 AVL_Tree<T1, T2>::get_data(node* p_node, T2 key)
 {
-    Node<T>* pNode = pAround_Node->Right;
-    pAround_Node->Right = pNode->Left;
-    pNode->Left = pAround_Node;
-    fix_height(pAround_Node);
-    fix_height(pNode);
-    return pNode;
+    if (p_node == nullptr) return T2();
+    if (key == p_node->key) return p_node->data;
+    else if (key > p_node->key) get_data(p_node->p_right, key);
+    else if (key < p_node->key) get_data(p_node->p_left, key);
 }
 
-template<typename T>
-typename AVL_Tree<T>::template Node<T>* AVL_Tree<T>::balance(Node<T>* pNode)
+template<typename T1, typename T2>
+typename AVL_Tree<T1, T2>:: node *AVL_Tree<T1, T2>::remove_min(node* p_node)
 {
-    fix_height(pNode);
-    if (balance_factor(pNode) == 2)
+    if (!p_node->p_left) return p_node->p_right;
+    p_node->p_left = remove_min(p_node->p_left);
+    return balance(p_node);
+}
+
+template<typename T1, typename T2>
+typename AVL_Tree<T1, T2>:: node *AVL_Tree<T1, T2>::remove(node* p_node, T2 key)
+{
+    if (!p_node)
     {
-        if (balance_factor(pNode->Right) < 0)
-            pNode->Right = rotate_right(pNode->Right);
-        return rotate_left(pNode);
+        node* temp = nullptr;
+        return temp;
     }
 
-    if (balance_factor(pNode) == -2)
+    if (key > p_node->key) p_node->p_right = remove(p_node->p_right, key);
+    else if (key < p_node->key) p_node->p_left = remove(p_node->p_left, key);
+    else // key == p_node->key
     {
-        if (balance_factor(pNode->Left) > 0)
-            pNode->Left = rotate_left(pNode->Left);
-        return rotate_right(pNode);
+        node* left = p_node->p_left;
+        node* right = p_node->p_right;
+        delete p_node;
+
+        if (!right) return left;
+        node* min = find_min(right);
+        min->p_right = remove_min(right);
+        min->p_left = left;
+        return balance(min);
     }
-    return pNode;
+    return balance(p_node);
 }
 
-
-template<typename T>
-typename AVL_Tree<T>::template Node<T>* AVL_Tree<T>::remove_min(Node<T>* pNode)
+template<typename T1, typename T2>
+inline typename AVL_Tree<T1, T2>::node* AVL_Tree<T1, T2>::clear(node* p_node)
 {
-    if (pNode->Left == nullptr)
-    {
-        if (pNode->Right == nullptr) return nullptr;
-        return pNode->Right;
-    }
-    pNode->Left = remove_min(pNode->Left);
-    return balance(pNode);
+    if (p_node->p_left) p_node->p_left = clear(p_node->p_left);
+    if (p_node->p_right) p_node->p_right = clear(p_node->p_right);
+    delete p_node;
+    return nullptr;
 }
 
-template<typename T>
-typename AVL_Tree<T>::template Node<T>* AVL_Tree<T>::remove(Node<T>* pNode, int key)
+template<typename T1, typename T2>
+inline void AVL_Tree<T1, T2>::get_NLR(node* p_node, std::vector<T2> &vec)
 {
-    if (pNode == nullptr) return nullptr;
-    else if (key < pNode->key) pNode->Left = remove(pNode->Left, key);
-    else if (key > pNode->key) pNode->Right = remove(pNode->Right, key);
-    else
-    {
-        Node<T>* pNodeL = pNode->Left;
-        Node<T>* pNodeR = pNode->Right;
-        delete pNode;
+    if(!p_node) return;
 
-        if (pNodeR == nullptr) return pNodeL;
-
-        Node<T>* pmin = find_min(pNodeR);
-        pmin->Right = remove_min(pNodeR);
-        pmin->Left = pNodeL;
-        return balance(pmin);
-    }
-    return balance(pNode);
-}
-
-
-template<typename T>
-AVL_Tree<T>::~AVL_Tree()
-{
-    while (this->pRoot != nullptr)
-    {
-        this->pRoot = remove(this->pRoot, this->pRoot->key);
-    }
+    vec.push_back(p_node->data);
+    get_NLR(p_node->p_left, vec);
+    get_NLR(p_node->p_right, vec);
 }
